@@ -1,0 +1,1759 @@
+/* ==========================================================================
+   OmniTools — design system
+   Token easing/durasi mengikuti aturan Emil Kowalski (animate / emil-design-eng)
+   dan prinsip material + aksesibilitas dari apple-design.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Easing — kurva bawaan CSS terlalu lemah, semua pakai kurva custom. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Durasi — semua UI di bawah 300ms. */
+  --dur-press: 120ms;
+  --dur-color: 150ms;
+  --dur-panel: 160ms;
+  --dur-indicator: 220ms;
+  --dur-toast-in: 260ms;
+  --dur-toast-out: 150ms;
+
+  /* Warna */
+  --bg: #f4f6f9;
+  --bg-glow-a: rgba(37, 99, 235, 0.05);
+  --bg-glow-b: rgba(99, 102, 241, 0.05);
+  --surface: #ffffff;
+  --surface-sunken: #f7f9fc;
+  --surface-raised: #ffffff;
+  --border: #e5e9f0;
+  --border-strong: #d3dae5;
+  --text: #0b1220;
+  --text-muted: #56627a;
+  --text-faint: #8a94a6;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eef4ff;
+  --accent-ink: #ffffff;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --success: #15803d;
+  --warn: #b45309;
+  --warn-soft: #fffbeb;
+  --seg-track: #e7ebf2;
+  --seg-thumb: #ffffff;
+  --checker: #e8ecf2;
+  --scrim: rgba(11, 18, 32, 0.45);
+
+  /* Elevasi */
+  --shadow-xs: 0 1px 2px rgba(11, 18, 32, 0.05);
+  --shadow-sm: 0 1px 3px rgba(11, 18, 32, 0.06), 0 1px 2px rgba(11, 18, 32, 0.04);
+  --shadow-card: 0 1px 2px rgba(11, 18, 32, 0.04), 0 18px 40px -22px rgba(11, 18, 32, 0.24);
+  --shadow-pop: 0 12px 30px -10px rgba(11, 18, 32, 0.28);
+
+  /* Radius */
+  --r-xs: 8px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-full: 999px;
+
+  --header-h: 60px;
+}
+
+/* --------------------------------------------------------------------------
+   Dasar
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Scroll halus untuk tautan dalam halaman, dimatikan kalau user meminta
+   pengurangan gerak — perpindahan panjang justru paling memicu mual. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-optical-sizing: auto;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 12% -5%, var(--bg-glow-a) 0%, transparent 45%),
+    radial-gradient(circle at 88% 8%, var(--bg-glow-b) 0%, transparent 42%);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Header — material tembus pandang, konten mengalir di bawahnya
+   -------------------------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-color) ease, box-shadow var(--dur-color) ease;
+}
+
+/* Scroll edge effect: garis pemisah baru muncul saat konten benar-benar lewat
+   di bawah header, bukan border permanen. */
+.site-header[data-scrolled="true"] {
+  border-bottom-color: var(--border);
+  box-shadow: var(--shadow-xs);
+}
+
+.site-header__inner {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+}
+
+.site-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.site-nav a {
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color var(--dur-color) ease, background-color var(--dur-color) ease;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-cta {
+  text-decoration: none;
+}
+
+/* Tautan lewati-ke-konten: muncul hanya saat difokuskan keyboard. */
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  z-index: 90;
+  padding: 10px 18px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-pop);
+  transform: translate(-50%, -160%);
+  transition: transform 180ms var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translate(-50%, 0);
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.hero {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 72px 20px 34px;
+  text-align: center;
+}
+
+.hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.hero__actions .btn {
+  text-decoration: none;
+}
+
+.hero__title {
+  font-size: clamp(1.9rem, 4.4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  /* Tracking mengikat ukuran: teks besar dirapatkan. */
+  letter-spacing: -0.032em;
+  margin-bottom: 12px;
+}
+
+.hero__title em {
+  font-style: normal;
+  background: linear-gradient(120deg, var(--accent), #7c6cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero__desc {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   Segmented control
+   Resep "tab indicator with a color transition": lapisan aktif diduplikasi lalu
+   dipotong dengan clip-path, jadi background dan warna teks berubah presisi
+   bersamaan alih-alih dua warna yang di-interpolasi terpisah.
+   -------------------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  margin-bottom: 24px;
+}
+
+.segmented {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--seg-track);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmented::-webkit-scrollbar {
+  display: none;
+}
+
+.segmented__row {
+  display: flex;
+  gap: 0;
+}
+
+.segmented__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-color) ease, transform var(--dur-press) var(--ease-out);
+}
+
+.segmented__item:active {
+  transform: scale(0.97);
+}
+
+/* Lapisan aktif: salinan visual yang dipotong ke posisi tab terpilih. */
+.segmented__layer {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  /* right dibiarkan auto supaya lebar lapisan mengikuti lebar baris tab, bukan
+     lebar track yang terlihat. Tanpa ini indikator meleset saat track bisa
+     di-scroll di layar sempit. */
+  right: auto;
+  pointer-events: none;
+  background: var(--seg-thumb);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-sm);
+  clip-path: inset(0 calc(100% - var(--clip-right, 100%)) 0 var(--clip-left, 0) round 10px);
+  transition: clip-path var(--dur-indicator) var(--ease-in-out);
+}
+
+.segmented__layer .segmented__item {
+  color: var(--text);
+}
+
+.segmented__layer .segmented__item:active {
+  transform: none;
+}
+
+/* Sebelum posisi tab terukur, sembunyikan lapisan agar tidak berkedip. */
+.segmented:not([data-ready="true"]) .segmented__layer {
+  opacity: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Workspace & panel
+   -------------------------------------------------------------------------- */
+
+.workspace {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto 64px;
+  padding: 0 20px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+}
+
+/* Animasi masuk panel hanya dipasang saat perpindahan dipicu pointer.
+   Aksi keyboard tidak dianimasikan (aturan frekuensi Emil). */
+.panel[data-animate="true"] {
+  animation: panel-enter var(--dur-panel) var(--ease-out);
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel__head {
+  margin-bottom: 22px;
+}
+
+.panel__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.panel__subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.tool-column {
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Form
+   -------------------------------------------------------------------------- */
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  margin-bottom: 7px;
+}
+
+.field__counter {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+  color: var(--text);
+  font-size: 0.9375rem;
+  transition: border-color var(--dur-color) ease, box-shadow var(--dur-color) ease,
+    background-color var(--dur-color) ease;
+}
+
+.input::placeholder {
+  color: var(--text-faint);
+}
+
+.input-group .input {
+  padding-right: 88px;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.field[data-invalid="true"] .input,
+.field[data-invalid="true"] .select {
+  border-color: var(--danger);
+}
+
+.field[data-invalid="true"] .input:focus,
+.field[data-invalid="true"] .select:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+.select {
+  appearance: none;
+  padding-right: 38px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 19px) calc(50% + 1px), calc(100% - 14px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.input-group__action {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--dur-color) ease, background-color var(--dur-color) ease,
+    border-color var(--dur-color) ease, transform var(--dur-press) var(--ease-out);
+}
+
+.input-group__action:active {
+  transform: scale(0.95);
+}
+
+.field__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.field__error,
+.field__note {
+  margin-top: 7px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Error mengalir sebagai teks biasa supaya tombol perbaikannya menempel
+   langsung di akhir kalimat, bukan terlempar ke sisi kanan. */
+.field__error {
+  display: block;
+  color: var(--danger);
+}
+
+.field__note {
+  color: var(--text-muted);
+}
+
+.field__error-action {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Warna */
+.swatch-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+  transition: border-color var(--dur-color) ease;
+}
+
+.swatch input[type="color"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: none;
+  cursor: pointer;
+}
+
+.swatch input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.swatch input[type="color"]::-webkit-color-swatch {
+  border: 1px solid rgba(128, 138, 155, 0.45);
+  border-radius: 7px;
+}
+
+.swatch input[type="color"]::-moz-color-swatch {
+  border: 1px solid rgba(128, 138, 155, 0.45);
+  border-radius: 7px;
+}
+
+.swatch__meta {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.swatch__meta b {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.swatch__meta span {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Tombol
+   -------------------------------------------------------------------------- */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  /* Properti disebut satu per satu — tidak pernah `transition: all`. */
+  transition: transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-color) ease, border-color var(--dur-color) ease,
+    color var(--dur-color) ease, opacity var(--dur-color) ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.btn--ghost {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn--quiet {
+  padding: 8px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.btn--sm {
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+}
+
+/* Hover digate: perangkat sentuh memicu hover palsu saat disentuh. */
+@media (hover: hover) and (pointer: fine) {
+  .btn--primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  .btn--ghost:hover:not(:disabled),
+  .btn--quiet:hover:not(:disabled) {
+    background: var(--surface-sunken);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .input-group__action:hover {
+    background: var(--surface-sunken);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .segmented__item:hover {
+    color: var(--text);
+  }
+
+  .chip:hover {
+    border-color: var(--border-strong);
+  }
+
+  .site-footer a:hover {
+    color: var(--accent);
+  }
+}
+
+/* Spinner hanya muncul kalau proses benar-benar berjalan lama. */
+.btn__spinner {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+  animation: spin 600ms linear infinite; /* gerak konstan -> linear */
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Lucide mengganti <i data-lucide> dengan <svg>, jadi semua svg langsung di
+   dalam tombol disembunyikan — tidak bergantung pada class yang ikut tersalin. */
+.btn[data-loading="true"] > svg,
+.btn[data-loading="true"] .btn__icon {
+  display: none;
+}
+
+.btn:not([data-loading="true"]) .btn__spinner {
+  display: none;
+}
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.actions-row > .btn {
+  flex: 1 1 140px;
+}
+
+/* --------------------------------------------------------------------------
+   Preview
+   -------------------------------------------------------------------------- */
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+}
+
+.preview__stage {
+  display: grid;
+  place-items: center;
+  min-height: 248px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.preview__img {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  /* Saat gambar diganti di tengah pengetikan, blur tipis menyamarkan jahitan
+     pergantian sehingga terbaca sebagai satu objek, bukan dua yang bertukar. */
+  transition: filter 180ms ease, opacity 180ms ease;
+}
+
+.preview__img[data-busy="true"] {
+  filter: blur(2px);
+  opacity: 0.6;
+}
+
+.preview__empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px 6px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 0.875rem;
+  max-width: 24ch;
+}
+
+.preview__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   Chip, badge, notice
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: color var(--dur-color) ease, background-color var(--dur-color) ease,
+    border-color var(--dur-color) ease;
+}
+
+.chip--accent {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent);
+}
+
+.chip[data-active="true"] {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--accent);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.notice--warn {
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 32%, transparent);
+  color: var(--warn);
+}
+
+.notice code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8125em;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   Dropzone
+   -------------------------------------------------------------------------- */
+
+.dropzone {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 44px 24px;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface-sunken);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--dur-color) ease, background-color var(--dur-color) ease;
+}
+
+.dropzone[data-dragover="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dropzone__icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.dropzone__title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.dropzone__hint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Compare slider — manipulasi langsung, pointer dilacak 1:1
+   -------------------------------------------------------------------------- */
+
+.compare {
+  position: relative;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  background-color: var(--surface-sunken);
+  background-image:
+    linear-gradient(45deg, var(--checker) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checker) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checker) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checker) 75%);
+  background-size: 18px 18px;
+  background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+}
+
+.compare__img {
+  display: block;
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+/* Kedua sisi dipotong saling melengkapi. Kalau hanya lapisan hasil yang
+   dipotong, area transparannya justru menampilkan foto asli yang ada persis
+   di bawahnya — seolah latarnya tidak terhapus. Foto asli harus ikut hilang
+   supaya checkerboard di belakang yang terlihat. */
+.compare__before {
+  clip-path: inset(0 50% 0 0);
+}
+
+.compare__after {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 0 0 50%);
+}
+
+.compare__after .compare__img {
+  height: 100%;
+}
+
+.compare__handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  margin-left: -20px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: ew-resize;
+}
+
+.compare__handle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(11, 18, 32, 0.22);
+}
+
+.compare__grip {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #0b1220;
+  box-shadow: var(--shadow-pop);
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.compare__handle:active .compare__grip {
+  transform: scale(0.94);
+}
+
+/* Ring fokus dipindah ke grip; kalau menempel di tombolnya, ring setinggi
+   gambar menutupi hasil yang sedang dibandingkan. */
+.compare__handle:focus-visible {
+  outline: none;
+}
+
+.compare__handle:focus-visible .compare__grip {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.compare__tag {
+  position: absolute;
+  top: 10px;
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+  background: rgba(11, 18, 32, 0.66);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.compare__tag--before {
+  left: 10px;
+}
+
+.compare__tag--after {
+  right: 10px;
+}
+
+/* Progress indeterminate untuk proses hapus latar */
+.progress {
+  height: 4px;
+  border-radius: var(--r-full);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress::after {
+  content: "";
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  animation: progress-slide 1.1s linear infinite;
+}
+
+@keyframes progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+.result-stack {
+  display: grid;
+  gap: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Kartu hasil downloader
+   -------------------------------------------------------------------------- */
+
+.media-card {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+}
+
+.media-card__thumb {
+  width: 104px;
+  height: 104px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--border);
+  color: var(--text-faint);
+  overflow: hidden;
+}
+
+.media-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-card__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.media-card__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.media-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Toast — masuk dan keluar dari arah yang sama (konsistensi spasial),
+   memakai transition supaya bisa diinterupsi saat dipicu beruntun.
+   -------------------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 10px 16px;
+  border-radius: var(--r-full);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-pop);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(140%);
+  /* Keluar lebih cepat daripada masuk. */
+  transition: transform var(--dur-toast-out) var(--ease-out), opacity var(--dur-toast-out) ease;
+}
+
+.toast[data-open="true"] {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition: transform var(--dur-toast-in) var(--ease-out), opacity var(--dur-toast-in) ease;
+}
+
+.toast__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+}
+
+.toast[data-variant="error"] {
+  background: var(--danger);
+  color: #fff;
+}
+
+.toast[data-variant="success"] .toast__icon {
+  color: #4ade80;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.site-footer__inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 20px 36px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.site-footer__brand p {
+  margin-top: 12px;
+  max-width: 34ch;
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+  line-height: 1.6;
+}
+
+.site-footer__col h2 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
+
+.site-footer__col ul {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.site-footer__bottom {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 18px 20px 28px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+.site-footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color var(--dur-color) ease;
+}
+
+/* --------------------------------------------------------------------------
+   Responsif
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .tool-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    margin-top: 32px;
+  }
+
+  .panel {
+    padding: 20px 16px;
+    border-radius: var(--r-md);
+  }
+
+  .workspace,
+  .tabs,
+  .hero {
+    padding-inline: 16px;
+  }
+
+  .media-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .media-card__thumb {
+    width: 100%;
+    height: 160px;
+  }
+
+  .actions-row > .btn {
+    flex-basis: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Aksesibilitas — tiga sinyal preferensi ditangani terpisah
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Bukan nol: transisi opacity dan warna yang membantu pemahaman tetap ada,
+     perpindahan posisi yang dihilangkan. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+  }
+
+  .panel[data-animate="true"] {
+    animation: none;
+  }
+
+  .segmented__layer {
+    transition: none;
+  }
+
+  .toast {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .btn__spinner,
+  .progress::after {
+    animation-duration: 900ms !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-header {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom-color: var(--border);
+  }
+
+  .compare__tag {
+    background: #0b1220;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: #9aa5b6;
+    --border-strong: #64748b;
+    --text-muted: #33415c;
+    --text-faint: #475569;
+  }
+
+  .site-header {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ==========================================================================
+   Section landing page
+   Gerak di sini dibatasi ke permukaan marketing. UI alat di atas tidak
+   ditambahi animasi apa pun — aturan frekuensi dari skill `animate`.
+   ========================================================================== */
+
+/* Anchor tidak boleh berhenti di bawah header sticky. */
+.section,
+.tool-section,
+#top {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+.tool-section {
+  padding-bottom: 8px;
+}
+
+.section {
+  padding: 72px 0;
+}
+
+.section--alt {
+  background: var(--surface);
+  border-block: 1px solid var(--border);
+}
+
+.section__inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section__inner--narrow {
+  max-width: 760px;
+}
+
+.section__head {
+  max-width: 620px;
+  margin-bottom: 36px;
+}
+
+.section__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.section__title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.022em; /* tracking dirapatkan seiring ukuran naik */
+}
+
+.section__desc {
+  margin-top: 10px;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------ fitur */
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 16px;
+  list-style: none;
+}
+
+.feature {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.section--alt .feature {
+  background: var(--bg);
+}
+
+.feature__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 14px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.feature__title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.feature__desc {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* -------------------------------------------------------- cara pakai */
+
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  list-style: none;
+}
+
+.step {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg);
+}
+
+.step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.step__title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.step__desc {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------- FAQ */
+
+.faq {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.faq__item + .faq__item {
+  border-top: 1px solid var(--border);
+}
+
+.faq__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 20px;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color var(--dur-color) ease;
+}
+
+.faq__chevron {
+  flex: 0 0 auto;
+  color: var(--text-faint);
+  transition: transform 200ms var(--ease-out), color var(--dur-color) ease;
+}
+
+.faq__trigger[aria-expanded="true"] .faq__chevron {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+/* height adalah satu-satunya properti non-GPU yang boleh dianimasikan, dan
+   hanya untuk accordion — tidak ada padanan transform-nya. Tingginya diukur
+   di JS, tidak dianimasikan ke `auto`. Durasi ditahan pendek karena ini
+   memicu layout di setiap frame. */
+.faq__panel {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: height 200ms var(--ease-out), opacity 200ms var(--ease-out);
+}
+
+.faq__panel[data-open="true"] {
+  opacity: 1;
+}
+
+.faq__body {
+  padding: 0 20px 18px;
+  display: grid;
+  gap: 10px;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.faq__body code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8125em;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+
+/* ---------------------------------------------------------------- CTA */
+
+.cta {
+  padding: 40px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.cta__title {
+  font-size: clamp(1.25rem, 2.6vw, 1.625rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cta__desc {
+  margin: 8px 0 20px;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.cta .btn {
+  text-decoration: none;
+}
+
+/* -------------------------------------------------------- scroll reveal
+
+   Frekuensi: jarang / kunjungan pertama — boleh ada gerak.
+   Tujuan   : mencegah section muncul mendadak saat masuk viewport.
+   Properti : transform + opacity saja. Transition, bukan keyframes, supaya
+              bisa diinterupsi. Dijalankan sekali, tidak diulang tiap scroll.
+
+   Keadaan awal hanya berlaku kalau <html data-reveal="on">, yang dipasang
+   skrip di <head> setelah memastikan IntersectionObserver ada dan user tidak
+   meminta reduced motion. Kalau JS gagal memuat, konten tetap terlihat.     */
+
+[data-reveal="on"] .reveal {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.reveal {
+  transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger 60ms antar item — cukup untuk terbaca berurutan, belum terasa
+   lambat. Murni dekoratif: itemnya bisa dibaca dan diklik sejak awal. */
+.reveal-group .reveal:nth-child(2) { transition-delay: 60ms; }
+.reveal-group .reveal:nth-child(3) { transition-delay: 120ms; }
+.reveal-group .reveal:nth-child(4) { transition-delay: 180ms; }
+.reveal-group .reveal:nth-child(5) { transition-delay: 240ms; }
+.reveal-group .reveal:nth-child(6) { transition-delay: 300ms; }
+
+/* --------------------------------------------------- jarak hasil panel */
+
+.panel > .result-stack,
+.panel > .field__error {
+  margin-top: 16px;
+}
+
+/* ------------------------------------------------- hover section landing */
+
+@media (hover: hover) and (pointer: fine) {
+  .site-nav a:hover {
+    color: var(--text);
+    background: var(--surface-sunken);
+  }
+
+  .faq__trigger:hover {
+    background: var(--surface-sunken);
+  }
+
+  .site-footer__col a:hover,
+  .site-footer__brand a:hover {
+    color: var(--accent);
+  }
+}
+
+/* ------------------------------------------------------------ responsif */
+
+@media (max-width: 900px) {
+  .site-nav {
+    display: none; /* tautan yang sama tetap tersedia di footer */
+  }
+
+  .site-footer__inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .site-footer__brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 48px;
+  }
+
+  .section {
+    padding: 52px 0;
+  }
+
+  .section__inner {
+    padding-inline: 16px;
+  }
+
+  .hero__actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .cta {
+    padding: 28px 20px;
+  }
+
+  .site-footer__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+    padding-top: 36px;
+  }
+
+  .site-footer__bottom {
+    flex-direction: column;
+  }
+}
+
+/* ---------------------------------------------------------- aksesibilitas */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Reveal tidak pernah menyembunyikan apa pun saat reduced motion aktif,
+     karena atribut data-reveal memang tidak dipasang. Aturan ini jaring
+     pengaman kalau preferensinya berubah di tengah sesi. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition-delay: 0ms !important;
+  }
+
+  .faq__chevron {
+    transition: color var(--dur-color) ease;
+  }
+}

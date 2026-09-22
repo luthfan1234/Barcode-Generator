@@ -1,0 +1,13 @@
+# Inti — tanpa ini aplikasi tidak jalan
+Flask>=3.0
+qrcode[pil]>=8.0
+python-barcode>=0.15
+Pillow>=10.0
+
+# Opsional — tab "Remove BG". Tanpa ini tab-nya tetap tampil tapi menandai
+# dirinya belum aktif, bukan berpura-pura berhasil.
+rembg>=2.0
+onnxruntime>=1.17
+
+# Opsional — tab "Downloader".
+yt-dlp>=2024.8.6
