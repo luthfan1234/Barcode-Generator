@@ -82,20 +82,66 @@ BARCODE_ALIASES = {"upc": "upca", "upc-a": "upca", "code-128": "code128", "code-
 
 # Daftar domain tertutup untuk downloader. Selain membatasi cakupan fitur, ini
 # mencegah endpoint dipakai sebagai proxy ke host internal (SSRF).
+# Threads sengaja tidak ada di sini: yt-dlp tidak punya extractor untuk
+# threads.net maupun threads.com, jadi berapa kali pun dicoba hasilnya
+# "Unsupported URL". Mencantumkannya sama saja menjanjikan yang tidak ada.
 SOCIAL_HOSTS = {
     "instagram": ("instagram.com", "www.instagram.com", "instagr.am"),
     "tiktok": ("tiktok.com", "www.tiktok.com", "vm.tiktok.com", "vt.tiktok.com", "m.tiktok.com"),
-    "threads": ("threads.net", "www.threads.net", "threads.com", "www.threads.com"),
     "youtube": ("youtube.com", "www.youtube.com", "youtu.be", "m.youtube.com"),
     "facebook": ("facebook.com", "www.facebook.com", "fb.watch", "web.facebook.com"),
 }
 SOCIAL_LABELS = {
     "instagram": "Instagram",
     "tiktok": "TikTok",
-    "threads": "Threads",
     "youtube": "YouTube",
     "facebook": "Facebook",
 }
+
+# Cookies opsional, mati secara bawaan. Instagram dan Facebook membatasi akses
+# anonim dengan cepat; mengisi salah satu variabel ini membuat yt-dlp memakai
+# sesi login yang sudah ada.
+#   YTDLP_COOKIES_FILE=/path/cookies.txt      (format Netscape)
+#   YTDLP_COOKIES_FROM_BROWSER=chrome         (chrome/firefox/edge/brave/...)
+YTDLP_COOKIES_FILE = os.environ.get("YTDLP_COOKIES_FILE", "").strip()
+YTDLP_COOKIES_BROWSER = os.environ.get("YTDLP_COOKIES_FROM_BROWSER", "").strip()
+
+# Pesan mentah yt-dlp berbahasa Inggris dan menyebut flag baris perintah yang
+# tidak ada artinya di antarmuka web. Dipetakan dulu ke sebab yang bisa
+# ditindaklanjuti user.
+YTDLP_ERROR_MAP = [
+    (
+        ("rate-limit", "rate limit", "redirected to the login page"),
+        "{platform} sedang membatasi akses tanpa login. Tunggu beberapa menit lalu coba lagi.",
+    ),
+    (
+        ("sign in to confirm", "not a bot", "captcha"),
+        "{platform} meminta verifikasi bahwa permintaan ini bukan robot. Coba lagi beberapa saat lagi.",
+    ),
+    (
+        ("login required", "requires authentication", "private", "not available to you", "age-restricted"),
+        "Konten ini tidak publik, jadi tidak bisa diambil tanpa akun yang punya akses.",
+    ),
+    (
+        ("unavailable", "has been removed", "no longer available", "not found", "does not exist"),
+        "Konten tidak ditemukan. Mungkin sudah dihapus, atau linknya keliru.",
+    ),
+    (
+        ("unsupported url",),
+        "Link ini belum didukung. Pastikan linknya mengarah langsung ke satu video atau post.",
+    ),
+    (
+        # "available in your country" saja, karena kalimat aslinya bervariasi:
+        # "...has not made this video available in your country" dan
+        # "The uploader has blocked it in your country".
+        ("available in your country", "in your country", "geo restriction", "geo-restricted"),
+        "Konten dibatasi untuk wilayah tertentu dan tidak bisa diakses dari server ini.",
+    ),
+    (
+        ("unable to download webpage", "connection", "timed out", "failed to resolve"),
+        "Server tidak berhasil menghubungi {platform}. Periksa koneksi lalu coba lagi.",
+    ),
+]
 
 IMAGE_FORMATS = {"PNG", "JPEG", "JPG", "WEBP", "BMP", "TIFF"}
 REMOVEBG_MAX_BYTES = 15 * 1024 * 1024
@@ -566,6 +612,33 @@ def require_social(url: str):
     return ytdlp, platform
 
 
+def base_ytdlp_opts():
+    opts = {"quiet": True, "no_warnings": True, "noprogress": True, "noplaylist": True}
+    if YTDLP_COOKIES_FILE:
+        opts["cookiefile"] = YTDLP_COOKIES_FILE
+    elif YTDLP_COOKIES_BROWSER:
+        opts["cookiesfrombrowser"] = (YTDLP_COOKIES_BROWSER,)
+    return opts
+
+
+def friendly_download_error(exc, platform: str | None = None) -> str:
+    """Ubah pesan mentah yt-dlp menjadi sebab yang bisa ditindaklanjuti user."""
+    label = SOCIAL_LABELS.get(platform or "", "Platform ini")
+    mentah = " ".join(str(exc).split())
+    rendah = mentah.lower()
+
+    for kunci, pesan in YTDLP_ERROR_MAP:
+        if any(k in rendah for k in kunci):
+            return pesan.format(platform=label)
+
+    # Tidak dikenali: buang derau khas baris perintah supaya sisanya masih
+    # terbaca, daripada melempar seluruh jejak error ke muka user.
+    bersih = re.sub(r"^ERROR:\s*", "", mentah)
+    bersih = re.sub(r"^\[[^\]]+\]\s*[\w.-]+:\s*", "", bersih)
+    bersih = re.sub(r"\s*(Use --cookies\b.*|See https?://\S+.*)$", "", bersih).strip()
+    return bersih[:200] or f"{label} tidak bisa dibaca saat ini."
+
+
 def sweep_stale_downloads():
     """Buang folder unduhan lama yang tertinggal karena koneksi terputus.
 
@@ -633,14 +706,14 @@ def api_social_resolve():
 
     ytdlp, platform = require_social(url)
 
-    opts = {"quiet": True, "no_warnings": True, "noplaylist": True, "skip_download": True}
+    opts = {**base_ytdlp_opts(), "skip_download": True}
     try:
         with ytdlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=False)
     except ytdlp.utils.DownloadError as exc:
-        fail(f"Tidak bisa membaca link tersebut: {str(exc).splitlines()[0]}", status=502, field="url")
+        fail(friendly_download_error(exc, platform), status=502, field="url")
     except Exception as exc:  # pragma: no cover
-        fail(f"Gagal memproses link: {exc}", status=502, field="url")
+        fail(friendly_download_error(exc, platform), status=502, field="url")
 
     if info.get("_type") == "playlist":
         entries = [entry for entry in (info.get("entries") or []) if entry]
@@ -680,7 +753,7 @@ def api_social_download():
     if not url:
         fail("Link video belum diisi.", field="url")
 
-    ytdlp, _ = require_social(url)
+    ytdlp, platform = require_social(url)
 
     sweep_stale_downloads()
     workdir = tempfile.mkdtemp(prefix=TEMP_PREFIX)
@@ -695,10 +768,7 @@ def api_social_download():
         else f"bv*[height<={h}]+ba/b[height<={h}]/bv*+ba/b"
     )
     opts = {
-        "quiet": True,
-        "noprogress": True,
-        "no_warnings": True,
-        "noplaylist": True,
+        **base_ytdlp_opts(),
         "format": selector,
         "max_filesize": SOCIAL_MAX_BYTES,
         "outtmpl": os.path.join(workdir, "%(id)s.%(ext)s"),
@@ -709,10 +779,10 @@ def api_social_download():
             info = ydl.extract_info(url, download=True)
     except ytdlp.utils.DownloadError as exc:
         shutil.rmtree(workdir, ignore_errors=True)
-        fail(f"Unduhan gagal: {str(exc).splitlines()[0]}", status=502, field="url")
+        fail(friendly_download_error(exc, platform), status=502, field="url")
     except Exception as exc:  # pragma: no cover
         shutil.rmtree(workdir, ignore_errors=True)
-        fail(f"Unduhan gagal: {exc}", status=502, field="url")
+        fail(friendly_download_error(exc, platform), status=502, field="url")
 
     path = pick_downloaded_file(info, workdir)
     if path is None:

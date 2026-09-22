@@ -530,7 +530,6 @@
   var HOST_MAP = {
     instagram: ["instagram.com", "instagr.am"],
     tiktok: ["tiktok.com"],
-    threads: ["threads.net", "threads.com"],
     youtube: ["youtube.com", "youtu.be"],
     facebook: ["facebook.com", "fb.watch"]
   };
