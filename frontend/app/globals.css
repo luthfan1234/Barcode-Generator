@@ -92,7 +92,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   font-optical-sizing: auto;
   font-size: 1rem;
   line-height: 1.55;
@@ -404,7 +404,10 @@ textarea {
 
 /* Animasi masuk panel hanya dipasang saat perpindahan dipicu pointer.
    Aksi keyboard tidak dianimasikan (aturan frekuensi Emil). */
-.panel[data-animate="true"] {
+/* Atributnya dipasang pada pembungkus panel, karena panelnya sendiri tetap
+   ter-mount dan hanya disembunyikan. */
+.panel[data-animate="true"],
+[data-animate="true"] > .panel {
   animation: panel-enter var(--dur-panel) var(--ease-out);
 }
 
@@ -467,7 +470,7 @@ textarea {
 }
 
 .field__counter {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-faint);
@@ -646,7 +649,7 @@ textarea {
 }
 
 .swatch__meta span {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   color: var(--text-faint);
 }
@@ -903,7 +906,7 @@ textarea {
 }
 
 .notice code {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.8125em;
   padding: 1px 5px;
   border-radius: 5px;
@@ -1600,7 +1603,7 @@ textarea {
 }
 
 .faq__body code {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.8125em;
   padding: 1px 5px;
   border-radius: 5px;
@@ -1642,11 +1645,13 @@ textarea {
    Properti : transform + opacity saja. Transition, bukan keyframes, supaya
               bisa diinterupsi. Dijalankan sekali, tidak diulang tiap scroll.
 
-   Keadaan awal hanya berlaku kalau <html data-reveal="on">, yang dipasang
-   skrip di <head> setelah memastikan IntersectionObserver ada dan user tidak
-   meminta reduced motion. Kalau JS gagal memuat, konten tetap terlihat.     */
+   Keadaan awalnya dipasang komponen Reveal, bukan CSS global, supaya konten
+   tidak pernah tersembunyi permanen kalau JavaScript gagal dimuat.          */
 
-[data-reveal="on"] .reveal {
+/* Keadaan awal dipasang oleh komponen Reveal lewat data-armed, hanya setelah
+   IntersectionObserver dipastikan ada dan user tidak meminta pengurangan
+   gerak. Tanpa penanda itu, konten tidak pernah disembunyikan. */
+.reveal[data-armed="true"] {
   opacity: 0;
   transform: translateY(10px);
 }
